@@ -19,13 +19,20 @@ class Xkcd
     def reverse_each(&block)
         @latest['num'].to_i.downto(1).each do |n|
             url = BASE_URL + "#{n}/info.0.json"
-            yield JSON.parse(url.read), n
+            begin
+                yield JSON.parse(url.read), n
+            rescue
+                $stderr.puts "failed to read comic #{n}"
+            end
         end
     end
 end
 
 def save(dest, data)
     File.open(dest, 'wb') { |f| f.write(data) } unless File.exists?(dest)
+rescue
+    $stderr.puts "failed to save #{dest}"
+    File.delete(dest)
 end
 
 xkcd = Xkcd.new
